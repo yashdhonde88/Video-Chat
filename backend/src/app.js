@@ -22,18 +22,19 @@ app.use(express.urlencoded({ limit: "40kb", extended: true }));
 app.use("/api/v1/users", userRoutes);
 
 const start = async () => {
-    app.set("mongo_user")
-    const connectionDb = await mongoose.connect("mongodb+srv://imdigitalashish:imdigitalashish@cluster0.cujabk4.mongodb.net/")
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+        throw new Error("MONGODB_URI must be set before starting the server");
+    }
 
-    console.log(`MONGO Connected DB HOst: ${connectionDb.connection.host}`)
+    const connectionDb = await mongoose.connect(mongoUri);
+    console.log(`MongoDB connected: ${connectionDb.connection.host}`);
     server.listen(app.get("port"), () => {
-        console.log("LISTENIN ON PORT 8000")
+        console.log(`Server listening on port ${app.get("port")}`);
     });
-
-
-
 }
 
-
-
-start();
+start().catch((error) => {
+    console.error("Unable to start server:", error.message);
+    process.exit(1);
+});

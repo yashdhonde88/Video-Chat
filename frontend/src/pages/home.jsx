@@ -15,8 +15,15 @@ function HomeComponent() {
 
     const {addToUserHistory} = useContext(AuthContext);
     let handleJoinVideoCall = async () => {
-        await addToUserHistory(meetingCode)
-        navigate(`/${meetingCode}`)
+        const normalizedCode = meetingCode.trim();
+        if (!normalizedCode) return;
+
+        try {
+            await addToUserHistory(normalizedCode);
+        } catch {
+            // The call can still be joined when history is temporarily unavailable.
+        }
+        navigate(`/${encodeURIComponent(normalizedCode)}`)
     }
 
     return (
@@ -58,8 +65,8 @@ function HomeComponent() {
 
                         <div style={{ display: 'flex', gap: "10px" }}>
 
-                            <TextField onChange={e => setMeetingCode(e.target.value)} id="outlined-basic" label="Meeting Code" variant="outlined" />
-                            <Button onClick={handleJoinVideoCall} variant='contained'>Join</Button>
+                            <TextField value={meetingCode} onChange={e => setMeetingCode(e.target.value)} onKeyDown={e => e.key === "Enter" && handleJoinVideoCall()} id="meeting-code" label="Meeting Code" variant="outlined" />
+                            <Button disabled={!meetingCode.trim()} onClick={handleJoinVideoCall} variant='contained'>Join</Button>
 
                         </div>
                     </div>

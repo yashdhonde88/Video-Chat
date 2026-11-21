@@ -40,6 +40,10 @@ const login = async (req, res) => {
 const register = async (req, res) => {
     const { name, username, password } = req.body;
 
+    if (!name || !username || !password) {
+        return res.status(httpStatus.BAD_REQUEST).json({ message: "Name, username and password are required" });
+    }
+
 
     try {
         const existingUser = await User.findOne({ username });
@@ -71,6 +75,7 @@ const getUserHistory = async (req, res) => {
 
     try {
         const user = await User.findOne({ token: token });
+        if (!user) return res.status(httpStatus.UNAUTHORIZED).json({ message: "Please log in again" });
         const meetings = await Meeting.find({ user_id: user.username })
         res.json(meetings)
     } catch (e) {
@@ -83,6 +88,8 @@ const addToHistory = async (req, res) => {
 
     try {
         const user = await User.findOne({ token: token });
+        if (!user) return res.status(httpStatus.UNAUTHORIZED).json({ message: "Please log in again" });
+        if (!meeting_code?.trim()) return res.status(httpStatus.BAD_REQUEST).json({ message: "Meeting code is required" });
 
         const newMeeting = new Meeting({
             user_id: user.username,
